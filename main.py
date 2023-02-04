@@ -85,7 +85,7 @@ class SeatAutoBooker:
         headers['Cookie'] = self.cookie
         self.resp = requests.post(self.book_url, data=data, headers=headers)
         self.json = json.loads(self.resp.text)
-        return self.json["CODE"], self.json["MESSAGE"] + " 座位"
+        return self.json["CODE"], self.json["MESSAGE"] + " 座位:{}".format(seat)
 
     def login(self):
         pwd_path_selector = """//*[@id="react-root"]/div/div/div[1]/div[2]/div/div[1]/div[2]/div/div/div/div/div[1]/div[2]/div/div[3]/div/div[2]/input"""
