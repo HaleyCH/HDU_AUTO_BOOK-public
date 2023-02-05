@@ -22,7 +22,7 @@
    |:----------|:------------------------------------------------|:--------------|
    | `SCHOOL_ID` | 你的学号      | 用于登录[杭电智慧图书馆](https://hdu.huitu.zhishulib.com/) |
    | `PASSWORD` | 杭电智慧图书馆密码 | 用于登录[杭电智慧图书馆](https://hdu.huitu.zhishulib.com/) |
-   | `SCKEY`（选填） | 微信推送服务    | 详见 [Sever酱](https://sct.ftqq.com/) 配置微信推送打卡结果   |
+   | `SC_KEY`（选填） | 微信推送服务    | 详见 [Sever酱](https://sct.ftqq.com/) 配置微信推送打卡结果   |
 
 ## 设置预约时间
  1. 点开 `_config.yml` 文件
@@ -47,6 +47,8 @@
 ![示范](docs/img1.png)
 ![示范](docs/img2.png)
 ![示范](docs/img3.png)
+
+### ❗Notice：由于GitHub不能保证cron完全准时，故该项目不适合用作抢座脚本。
 
 # 致谢
 - [杭州电子科技大学健康打卡脚本](https://github.com/YeQiuO/HDU_AUTO_PUNCH)
