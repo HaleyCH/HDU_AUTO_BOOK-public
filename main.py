@@ -34,7 +34,7 @@ class SeatAutoBooker:
         self.pd = os.environ["PASSWORD"].strip()  # 密码
         self.SCKey = None
         try:
-            self.SCKey = os.environ["SC_KEY"]
+            self.SCKey = os.environ["SCKEY"]
         except KeyError:
             print("没有Server酱的key,将不会推送消息")
 
