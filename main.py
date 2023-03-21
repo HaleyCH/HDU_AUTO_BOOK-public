@@ -163,10 +163,10 @@ if __name__ == "__main__":
         if datetime.now().hour <= 20 or datetime.now().hour == 20 and datetime.now().minute < 30:  # github action cron定时有波动
             print("阅览室预约，21点开始预约")
             exit(0)
-    # else:
-    #     if datetime.now().hour > 20 and datetime.now().minute > 30:
-    #         print("请检查上一个预约")
-    #         exit(0)
+    else:
+        if datetime.now().hour > 20 and datetime.now().minute > 30:
+            print("请检查上一个预约")
+            exit(0)
 
     print("尝试预约,开始时间：{}，持续时间：{}小时".format(cfg[key]['开始时间'], cfg[key]['持续小时数']))
 
