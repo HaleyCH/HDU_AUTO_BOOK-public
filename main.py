@@ -149,6 +149,17 @@ if __name__ == "__main__":
         cfg = yaml.safe_load(f_obj)
         time_data = cfg['预约时间']
 
+    # 阅览室晚上9点开始预约，自习室晚上8点半开始预约
+
+    if "自习室" not in cfg["type"]:
+        if datetime.now().hour <= 20 or datetime.now().hour == 20 and datetime.now().minute < 30:  # github action cron定时有波动
+            print("阅览室预约，21点开始预约")
+            exit(0)
+    else:
+        if datetime.now().hour > 20 and datetime.now().minute > 30:
+            print("请检查上一个预约")
+            exit(0)
+
     key = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][(datetime.now().weekday() + 2) % 7]
     if not time_data[key]['启用']:
         print("后天无预约")
