@@ -13,6 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 import time
 
+time_zone = 8  # 时区
 
 # 两天后日期
 key = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][(datetime.now().weekday() + 2) % 7]
@@ -160,11 +161,12 @@ if __name__ == "__main__":
     # 阅览室晚上9点开始预约，自习室晚上8点半开始预约
 
     if "自习室" not in cfg[key]["type"]:
-        if datetime.now().hour <= 20 or datetime.now().hour == 20 and datetime.now().minute < 30:  # github action cron定时有波动
+        # 阅览室
+        if datetime.now().hour <= 20 - time_zone or datetime.now().hour == 20 - time_zone and datetime.now().minute < 30:  # github action cron定时有波动
             print("阅览室预约，21点开始预约")
             exit(0)
     else:
-        if datetime.now().hour > 20 and datetime.now().minute > 30:
+        if datetime.now().hour > 20 - time_zone and datetime.now().minute > 30:
             print("请检查上一个预约")
             exit(0)
 
