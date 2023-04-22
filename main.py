@@ -78,7 +78,7 @@ class SeatAutoBooker:
             seats = [get_one_study_room_seat(2)]
         elif self.type == "四楼自习室":
             seats = [get_one_study_room_seat(4)]
-        elif self.type == "电子阅览室":
+        elif self.type == "二楼电子阅览室":
             seats = [get_one_study_room_seat(22)]
         # 相关post参数生成
         today_0_clock = datetime.strptime(datetime.now().strftime("%Y-%m-%d 00:00:00"), "%Y-%m-%d %H:%M:%S")
