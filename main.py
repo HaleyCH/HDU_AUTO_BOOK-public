@@ -14,8 +14,6 @@ from selenium.webdriver.support.wait import WebDriverWait
 import time
 
 time_zone = 8  # 时区
-
-# 两天后日期
 key = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][(datetime.now().weekday() + 2) % 7]
 
 def get_one_study_room_seat(floor):
@@ -153,19 +151,44 @@ class SeatAutoBooker:
             except Exception as e:
                 print(e.__class__, "推送服务配置错误")
 
+def have_regular_book(cfg):
+    """
+    判断是否常规有预约
+    :return: None or value
+    """
+    # 两天后日期
+    # 判断是否启用
+    if not cfg[key]['启用']:
+        print("后天无常规预约")
+        return None
+    return cfg[key]
+
+
+def have_specfic_book(cfg):
+    """
+    判断是否自定义有预约
+    :return: True or False
+    """
+    for v in cfg["自定义日期"]:
+        # 两天后
+        if v["日期"] == (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%d") and v["启用"]:
+                return v
+    print("后天无自定义预约")
+    return None
+
 
 if __name__ == "__main__":
     with open("_config.yml", 'r') as f_obj:
         cfg = yaml.safe_load(f_obj)
 
-    # 判断是否启用
-    if not cfg[key]['启用']:
+    v = None
+    v = have_regular_book(cfg)
+    v = have_specfic_book(cfg)
+    if v is None:
         print("后天无预约")
         exit(0)
 
-    # 阅览室晚上9点开始预约，自习室晚上8点半开始预约
-
-    if( "自习室" not in cfg[key]["type"]) and ( "电子阅览室" not in cfg[key]["type"]):
+    if( "自习室" not in v["type"]) and ( "电子阅览室" not in v["type"]):
         # 阅览室
         if datetime.now().hour <= 20 - time_zone or datetime.now().hour == 20 - time_zone and datetime.now().minute < 30:  # github action cron定时有波动
             print("阅览室预约于21点开始预约，现在还未到预约时间，请检查下一个Action")
@@ -174,8 +197,7 @@ if __name__ == "__main__":
         if datetime.now().hour > 20 - time_zone and datetime.now().minute > 30:
             print("自习室已于上个Action预约，请检查上一个预约")
             exit(0)
-
-    print("尝试预约,开始时间：{}，持续时间：{}小时".format(cfg[key]['开始时间'], cfg[key]['持续小时数']))
+    print("尝试预约,开始时间：{}，持续时间：{}小时".format(v['开始时间'], v['持续小时数']))
 
     s = SeatAutoBooker()
     if not s.login() == 0:
@@ -184,12 +206,12 @@ if __name__ == "__main__":
     if not s.get_user_info() == 0:
         s.driver.quit()
         exit(-1)
-    stat, msg = s.book_favorite_seat(cfg[key]['开始时间'], cfg[key]['持续小时数'])
+    stat, msg = s.book_favorite_seat(v['开始时间'], v['持续小时数'])
     if stat != "ok":
         for i in range(12):
             print("尝试重新预约")
             time.sleep(30)
-            stat, msg = s.book_favorite_seat(cfg[key]['开始时间'], cfg[key]['持续小时数'])
+            stat, msg = s.book_favorite_seat(v['开始时间'], v['持续小时数'])
             print(stat, msg)
             if stat == "ok":
                 break
