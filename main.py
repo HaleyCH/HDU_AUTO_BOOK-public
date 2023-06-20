@@ -150,6 +150,26 @@ class SeatAutoBooker:
                     print("Server酱通知失败")
             except Exception as e:
                 print(e.__class__, "推送服务配置错误")
+    
+    def auto_book(self, v):
+        if not self.login() == 0:
+            self.driver.quit()
+            exit(-1)
+        if not self.get_user_info() == 0:
+            self.driver.quit()
+            exit(-1)
+        stat, msg = self.book_favorite_seat(v['开始时间'], v['持续小时数'])
+        if stat != "ok":
+            for i in range(12):
+                print("尝试重新预约")
+                time.sleep(30)
+                stat, msg = self.book_favorite_seat(v['开始时间'], v['持续小时数'])
+                print(stat, msg)
+                if stat == "ok":
+                    break
+        self.wechatNotice("图书馆预约{}".format("成功" if stat == "ok" else "失败"), msg)
+        print(stat, msg)
+        self.driver.quit()
 
 def have_regular_book(cfg):
     """
@@ -176,45 +196,40 @@ def have_specfic_book(cfg):
     print("后天无自定义预约")
     return None
 
+def get_book_info(cfg):
+    v = have_regular_book(cfg)
+    v = have_specfic_book(cfg)
+    return v
+
+
+def now_booking(v):
+    """
+    判断是否为现在开始预约
+    """
+    if( "自习室" not in v["type"]) and ( "电子阅览室" not in v["type"]):
+        # 阅览室
+        if datetime.now().hour <= 20 - time_zone or datetime.now().hour == 20 - time_zone and datetime.now().minute < 30:  # github action cron定时有波动
+            print("阅览室预约于21点开始预约，现在还未到预约时间，请检查下一个Action")
+            return False
+    else:
+        if datetime.now().hour > 20 - time_zone and datetime.now().minute > 30:
+            print("自习室已于上个Action预约，请检查上一个预约")
+            return False
+    return True
 
 if __name__ == "__main__":
     with open("_config.yml", 'r') as f_obj:
         cfg = yaml.safe_load(f_obj)
 
-    v = None
-    v = have_regular_book(cfg)
-    v = have_specfic_book(cfg)
+    v = get_book_info(cfg)
     if v is None:
         print("后天无预约")
         exit(0)
 
-    if( "自习室" not in v["type"]) and ( "电子阅览室" not in v["type"]):
-        # 阅览室
-        if datetime.now().hour <= 20 - time_zone or datetime.now().hour == 20 - time_zone and datetime.now().minute < 30:  # github action cron定时有波动
-            print("阅览室预约于21点开始预约，现在还未到预约时间，请检查下一个Action")
-            exit(0)
-    else:
-        if datetime.now().hour > 20 - time_zone and datetime.now().minute > 30:
-            print("自习室已于上个Action预约，请检查上一个预约")
-            exit(0)
+    if not now_booking(v):
+        exit(0)
+
     print("尝试预约,开始时间：{}，持续时间：{}小时".format(v['开始时间'], v['持续小时数']))
 
     s = SeatAutoBooker()
-    if not s.login() == 0:
-        s.driver.quit()
-        exit(-1)
-    if not s.get_user_info() == 0:
-        s.driver.quit()
-        exit(-1)
-    stat, msg = s.book_favorite_seat(v['开始时间'], v['持续小时数'])
-    if stat != "ok":
-        for i in range(12):
-            print("尝试重新预约")
-            time.sleep(30)
-            stat, msg = s.book_favorite_seat(v['开始时间'], v['持续小时数'])
-            print(stat, msg)
-            if stat == "ok":
-                break
-    s.wechatNotice("图书馆预约{}".format("成功" if stat == "ok" else "失败"), msg)
-    print(stat, msg)
-    s.driver.quit()
+    s.auto_book(v)
