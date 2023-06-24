@@ -191,7 +191,7 @@ def have_specfic_book(cfg):
     """
     for v in cfg["自定义日期"]:
         # 两天后
-        if datetime.strptime(v["日期"], "%Y-%m-%d").strftime("%Y-%m-%d") == (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%d") and v["启用"]:
+        if v["日期"].strftime("%Y-%m-%d") == (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%d") and v["启用"]:
                 return v
     print("后天无自定义预约")
     return None
