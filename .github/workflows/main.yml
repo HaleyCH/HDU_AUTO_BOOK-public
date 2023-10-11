@@ -22,14 +22,16 @@ jobs:
           pip install -r requirements.txt
       - name: Install ChromeDriver
         run: |
-          DRIVER_URL=$(curl -s 'https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json' | jq -r '.versions | max_by(.version) | .downloads.chromedriver[] | select(.platform == "linux64") | .url') \
-            && curl --silent --show-error --location --fail --retry 3 --output /tmp/chromedriver_linux64.zip $DRIVER_URL \
-            && cd /tmp \
-            && unzip chromedriver_linux64.zip \
-            && rm -rf chromedriver_linux64.zip \
-            && sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver \
-            && sudo chmod +x /usr/local/bin/chromedriver \
-            && chromedriver --version
+          CHROME_VERSION=$(google-chrome --version | cut -f 3 -d ' ' | cut -d '.' -f 1)
+          echo "Chrome version is ${CHROME_VERSION}"
+          DRIVER_URL=$(curl -s 'https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json' | jq -r --arg version $CHROME_VERSION '.versions[] | select(.version | startswith($version)) | .downloads.chromedriver[] | select(.platform == "linux64") | .url' | tail -1)
+          curl --silent --show-error --location --fail --retry 3 --output /tmp/chromedriver_linux64.zip $DRIVER_URL
+          cd /tmp 
+          unzip chromedriver_linux64.zip 
+          rm -rf chromedriver_linux64.zip 
+          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver 
+          sudo chmod +x /usr/local/bin/chromedriver 
+          chromedriver --version
       - name: Auto Book
         env:
           SCHOOL_ID: ${{ secrets.SCHOOL_ID }}
