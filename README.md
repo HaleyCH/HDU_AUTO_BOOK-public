@@ -1,5 +1,5 @@
 # HDU-AutoBook 杭州电子科技大学图书馆自动预约脚本
-
+### 🎉🎉🎉 2023.10.11 经测试可以正常使用 🎉🎉🎉
 # <center> ❗❗❗重要❗❗❗ </center>
 ## <center> <font color=red>请遵守以下使用协议</font> </center>
  - 请合理使用此脚本，<big> <font color=red>切勿占用公共资源</font> </big>， 做出诸如预约但不去签到使用的行为。
