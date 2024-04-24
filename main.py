@@ -175,7 +175,7 @@ if __name__ == "__main__":
         print("预约未启用")
         exit(0)
 
-    s = SeatAutoBooker()
+    s = SeatAutoBooker(basic_config["SeatAutoBooker"])
     if not s.login() == 0:
         s.driver.quit()
         exit(-1)
