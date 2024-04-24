@@ -60,14 +60,28 @@ class SeatAutoBooker:
         self.cfg = booker_config
 
     def book_favorite_seat(self, user_config, seat_config):
+        #判断是否到了预约时间
+        # 阅览室晚上9点开始预约，自习室晚上8点半开始预约
+        the_day_after_tomorrow = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][(datetime.now().weekday() + 2) % 7]
+        seat_type = seat_config[user_config[the_day_after_tomorrow]['name']]["type"]
+        if seat_type == "自习室":
+            start_time = datetime.now().replace(hour=20, minute=30, second=0, microsecond=0)
+            end_time = datetime.now().replace(hour=20, minute=45, second=0, microsecond=0)
+        else:
+            start_time = datetime.now().replace(hour=21, minute=0, second=0, microsecond=0)
+            end_time = datetime.now().replace(hour=21, minute=15, second=0, microsecond=0)
+        start_time = start_time - timedelta(minutes=self.cfg["cron-delta-minutes"])
+        if datetime.now() < start_time or datetime.now() > end_time:
+            return -1, "未到预约时间"
         logging.info('Booking favorite seat')
-        for tried_times in range(5):
+        retry_sleep_time = timedelta(minutes=self.cfg["cron-delta-minutes"]).seconds*2/(self.cfg["max-retry"]-2) - 10
+        for tried_times in range(self.cfg["max-retry"]):
             try:
                 return self._book_favorite_seat(user_config, seat_config, tried_times)
             except Exception as e:
                 logging.exception(e)
                 print(e.__class__, "尝试第{}次".format(tried_times))
-                time.sleep(1)
+                time.sleep(retry_sleep_time)
 
     def _book_favorite_seat(self, user_config, seat_config, tried_times=0):
         logging.info('Entering _book_favorite_seat method')
