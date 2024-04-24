@@ -180,7 +180,7 @@ if __name__ == "__main__":
         user_config = yaml.safe_load(f_obj)
     with open("config/basic_config.yml", 'r') as f_obj:
         basic_config = yaml.safe_load(f_obj)
-    with open("config/basic_config.yml", 'r') as f_obj:
+    with open("config/seat_config.yml", 'r') as f_obj:
         seat_config = yaml.safe_load(f_obj)
 
     the_day_after_tomorrow = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][(datetime.now().weekday() + 2) % 7]
