@@ -59,16 +59,16 @@ class SeatAutoBooker:
         """
         #判断是否到了预约时间
         # 阅览室晚上9点开始预约，自习室晚上8点半开始预约
-        seat_type = seat_config[date_config['name']]["type"]
-        if seat_type == "自习室":
-            start_time = datetime.now().replace(hour=20, minute=30, second=0, microsecond=0)
-            end_time = datetime.now().replace(hour=20, minute=45, second=0, microsecond=0)
-        else:
-            start_time = datetime.now().replace(hour=21, minute=0, second=0, microsecond=0)
-            end_time = datetime.now().replace(hour=21, minute=15, second=0, microsecond=0)
-        start_time = start_time - timedelta(minutes=self.cfg["cron-delta-minutes"])
-        if datetime.now() < start_time or datetime.now() > end_time:
-            return -1, "未到预约时间"
+        # seat_type = seat_config[date_config['name']]["type"]
+        # if seat_type == "自习室":
+        #     start_time = datetime.now().replace(hour=20, minute=30, second=0, microsecond=0)
+        #     end_time = datetime.now().replace(hour=20, minute=45, second=0, microsecond=0)
+        # else:
+        #     start_time = datetime.now().replace(hour=21, minute=0, second=0, microsecond=0)
+        #     end_time = datetime.now().replace(hour=21, minute=15, second=0, microsecond=0)
+        # start_time = start_time - timedelta(minutes=self.cfg["cron-delta-minutes"])
+        # if datetime.now() < start_time or datetime.now() > end_time:
+        #     return -1, "未到预约时间"
         #开始预约
         for tried_times in range(5):
             try:
@@ -84,7 +84,7 @@ class SeatAutoBooker:
         # 相关post参数生成
         today_0_clock = datetime.strptime(datetime.now().strftime("%Y-%m-%d 00:00:00"), "%Y-%m-%d %H:%M:%S")
         book_time = today_0_clock + timedelta(days=2) + timedelta(hours=date_config['开始时间'])
-        delta = book_time - self.start_time
+        delta = book_time - self.cfg["start-time"]
         total_seconds = delta.days * 24 * 3600 + delta.seconds
         if date_config['name'] == '自定义' and tried_times<self.cfg["max-retry"]/3*2:
             seat = seats[0]
