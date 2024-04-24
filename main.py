@@ -124,7 +124,7 @@ class SeatAutoBooker:
             time.sleep(5)
             cookie_list = self.driver.get_cookies()
             self.cookie = ";".join([item["name"] + "=" + item["value"] + "" for item in cookie_list])
-            self.headers['Cookie'] = self.cookie
+            self.cfg["headers"]['Cookie'] = self.cookie
 
             logging.info("登录成功！")
         except Exception as e:
