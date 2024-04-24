@@ -97,10 +97,6 @@ class SeatAutoBooker:
         pwd_path_selector = """//*[@id="react-root"]/div/div/div[1]/div[2]/div/div[1]/div[2]/div/div/div/div/div[1]/div[2]/div/div[3]/div/div[2]/input"""
         button_path_selector = """//*[@id="react-root"]/div/div/div[1]/div[2]/div/div[1]/div[2]/div/div/div/div/div[1]/div[3]"""
 
-    def login(self):
-        pwd_path_selector = """..."""
-        button_path_selector = """..."""
-
         try:
             logging.info('开始登陆...')
 
