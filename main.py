@@ -65,8 +65,8 @@ class SeatAutoBooker:
         the_day_after_tomorrow = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][(datetime.now().weekday() + 2) % 7]
         seat_type = seat_config[user_config[the_day_after_tomorrow]['name']]["type"]
         if seat_type == "自习室":
-            start_time = datetime.now().replace(hour=20, minute=30, second=0, microsecond=0)
-            end_time = datetime.now().replace(hour=20, minute=45, second=0, microsecond=0)
+            start_time = datetime.now().replace(hour=20, minute=0, second=0, microsecond=0)
+            end_time = datetime.now().replace(hour=20, minute=15, second=0, microsecond=0)
         else:
             start_time = datetime.now().replace(hour=21, minute=0, second=0, microsecond=0)
             end_time = datetime.now().replace(hour=21, minute=15, second=0, microsecond=0)
