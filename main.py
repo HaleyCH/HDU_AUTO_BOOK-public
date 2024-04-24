@@ -4,6 +4,7 @@ import random
 from datetime import datetime, timedelta
 import json
 import os
+import logging
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -13,10 +14,15 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 import time
 
+
+logging.basicConfig(filename='SeatAutoBooker.log', filemode='a',
+                    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                    datefmt='%H:%M:%S',
+                    level=logging.DEBUG)
+
 time_zone = 8  # 时区
 
 # 两天后日期
-
 
 def get_seats_with_config(user_cfg, seat_config):
     # 二楼东/二楼西/四楼/三楼大厅/守正书院/求新书院/自定义
@@ -24,11 +30,15 @@ def get_seats_with_config(user_cfg, seat_config):
     if seat_type == "自定义":
         return cfg['自定义']
     return list(range(seat_config[seat_type]['start'], seat_config[seat_type]['end']))
+
+
 class SeatAutoBooker:
     def __init__(self, booker_config):
         self.json = None
         self.resp = None
         self.user_data = None
+
+        logging.info('Creating SeatAutoBooker object')
 
         self.un = os.environ["SCHOOL_ID"].strip()  # 学号
         print("使用用户：{}".format(self.un))
@@ -50,38 +60,20 @@ class SeatAutoBooker:
         self.cfg = booker_config
 
     def book_favorite_seat(self, date_config, seat_config):
-        """
-        预约后天的座位
-        :param start_hour: start time, for tomorrow.
-        :param duration: dwell time (hours)
-        :return: CODE, MASSAGE
-        CODE: 'ok' for success
-        """
-        #判断是否到了预约时间
-        # 阅览室晚上9点开始预约，自习室晚上8点半开始预约
-        # seat_type = seat_config[date_config['name']]["type"]
-        # if seat_type == "自习室":
-        #     start_time = datetime.now().replace(hour=20, minute=30, second=0, microsecond=0)
-        #     end_time = datetime.now().replace(hour=20, minute=45, second=0, microsecond=0)
-        # else:
-        #     start_time = datetime.now().replace(hour=21, minute=0, second=0, microsecond=0)
-        #     end_time = datetime.now().replace(hour=21, minute=15, second=0, microsecond=0)
-        # start_time = start_time - timedelta(minutes=self.cfg["cron-delta-minutes"])
-        # if datetime.now() < start_time or datetime.now() > end_time:
-        #     return -1, "未到预约时间"
-        #开始预约
+        logging.info('Booking favorite seat')
+
         for tried_times in range(5):
             try:
                 return self._book_favorite_seat(date_config, seat_config, tried_times)
             except Exception as e:
+                logging.exception(e)
                 print(e.__class__, "尝试第{}次".format(tried_times))
                 time.sleep(1)
 
-
     def _book_favorite_seat(self, date_config, seat_config, tried_times=0):
-        # 获取座位
+        logging.info('Entering _book_favorite_seat method')
+
         seats = get_seats_with_config(date_config, seat_config)
-        # 相关post参数生成
         today_0_clock = datetime.strptime(datetime.now().strftime("%Y-%m-%d 00:00:00"), "%Y-%m-%d %H:%M:%S")
         book_time = today_0_clock + timedelta(days=2) + timedelta(hours=date_config['开始时间'])
         delta = book_time - self.cfg["start-time"]
@@ -92,7 +84,6 @@ class SeatAutoBooker:
             seat = random.choice(seats)
         data = f"beginTime={total_seconds}&duration={3600 * date_config['持续小时数']}&&seats[0]={seat}&seatBookers[0]={self.user_data['uid']}"
 
-        # post
         headers = self.cfg["headers"]
         headers['Cookie'] = self.cookie
         print(data)
@@ -101,31 +92,53 @@ class SeatAutoBooker:
         return self.json["CODE"], self.json["MESSAGE"] + " 座位:{}".format(seat)
 
     def login(self):
+        logging.info('Login in')
+
         pwd_path_selector = """//*[@id="react-root"]/div/div/div[1]/div[2]/div/div[1]/div[2]/div/div/div/div/div[1]/div[2]/div/div[3]/div/div[2]/input"""
         button_path_selector = """//*[@id="react-root"]/div/div/div[1]/div[2]/div/div[1]/div[2]/div/div/div/div/div[1]/div[3]"""
 
+    def login(self):
+        pwd_path_selector = """..."""
+        button_path_selector = """..."""
+
         try:
+            logging.info('开始登陆...')
+
             self.driver.get("https://hdu.huitu.zhishulib.com/")
+            logging.debug('打开网站.')
+
             self.wait.until(EC.presence_of_element_located((By.NAME, "login_name")))
+            logging.debug('找到用户名输入框.')
+
             self.wait.until(EC.presence_of_element_located((By.XPATH, pwd_path_selector)))
+            logging.debug('找到密码输入框.')
+
             self.wait.until(EC.presence_of_element_located((By.XPATH, button_path_selector)))
+            logging.debug('找到登录按钮.')
+
             self.driver.find_element(By.NAME, 'login_name').clear()
             self.driver.find_element(By.NAME, 'login_name').send_keys(self.un)  # 传送帐号
+            logging.info('输入用户名')
+
             self.driver.find_element(By.XPATH, pwd_path_selector).clear()
             self.driver.find_element(By.XPATH, pwd_path_selector).send_keys(self.pd)  # 输入密码
+            logging.info('输入密码')
+            logging.info('点击登录按钮')
             self.driver.find_element(By.XPATH, button_path_selector).click()
             time.sleep(5)
             cookie_list = self.driver.get_cookies()
             self.cookie = ";".join([item["name"] + "=" + item["value"] + "" for item in cookie_list])
             self.headers['Cookie'] = self.cookie
 
+            logging.info("登录成功！")
         except Exception as e:
-            print(e.__class__.__name__ + "无法登录")
+            logging.error(f"登录失败：{e}")
             return -1
         return 0
 
     def get_user_info(self):
-        # 获取UID
+        logging.info('Getting user info')
+
         headers = self.headers
         headers['Cookie'] = self.cookie
         try:
@@ -134,6 +147,7 @@ class SeatAutoBooker:
             self.user_data = resp.json()['DATA']
             _ = self.user_data['uid']
         except Exception as e:
+            logging.exception(e)
             print(self.user_data)
             print(e.__class__.__name__ + ",获取用户数据失败")
             return -1
@@ -141,6 +155,8 @@ class SeatAutoBooker:
         return 0
 
     def wechatNotice(self, message, desp=None):
+        logging.info('Sending WeChat notice')
+
         if self.SCKey != '':
             url = 'https://sctapi.ftqq.com/{0}.send'.format(self.SCKey)
             data = {
@@ -154,6 +170,7 @@ class SeatAutoBooker:
                 else:
                     print("Server酱通知失败")
             except Exception as e:
+                logging.exception(e)
                 print(e.__class__, "推送服务配置错误")
 
 def is_booking_enable(date_cfg):
@@ -162,6 +179,7 @@ def is_booking_enable(date_cfg):
     return False
 
 if __name__ == "__main__":
+    logging.info('Start of the program')
     with open("user_config.yml", 'r') as f_obj:
         user_cfg = yaml.safe_load(f_obj)
     with open("config/basic_config.yml", 'r') as f_obj:
@@ -170,17 +188,20 @@ if __name__ == "__main__":
         seat_config = yaml.safe_load(f_obj)
 
     the_day_after_tomorrow = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][(datetime.now().weekday() + 2) % 7]
-    # 判断是否启用
     if not is_booking_enable(user_cfg[the_day_after_tomorrow]):
+        logging.info('预约未启用')
         print("预约未启用")
         exit(0)
 
     s = SeatAutoBooker(basic_config["SeatAutoBooker"])
     if not s.login() == 0:
         s.driver.quit()
+        logging.info('Login unsuccessful')
         exit(-1)
     if not s.get_user_info() == 0:
         s.driver.quit()
+        logging.info('Getting user info unsuccessful')
         exit(-1)
     s.book_favorite_seat(date_config=user_cfg[the_day_after_tomorrow], seat_config=seat_config)
     s.driver.quit()
+    logging.info('End of the program')
