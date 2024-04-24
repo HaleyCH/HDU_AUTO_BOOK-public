@@ -135,7 +135,7 @@ class SeatAutoBooker:
     def get_user_info(self):
         logging.info('Getting user info')
 
-        headers = self.headers
+        headers = self.cfg["headers"]
         headers['Cookie'] = self.cookie
         try:
             resp = requests.get("https://hdu.huitu.zhishulib.com/Seat/Index/searchSeats?LAB_JSON=1",
