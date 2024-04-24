@@ -29,7 +29,7 @@ def get_seats_with_config(user_config, date_config, seat_config):
     seat_name = date_config['name']
     if seat_name == "自定义":
         return user_config['自定义']
-    return list(range(seat_config[seat_name]['start'], seat_config[seat_name]['end']))
+    return list(range(seat_config[seat_name]['begin'], seat_config[seat_name]['end']))
 
 
 class SeatAutoBooker:
