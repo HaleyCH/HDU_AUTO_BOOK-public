@@ -15,7 +15,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 import time
 
 
-logging.basicConfig(filename='SeatAutoBooker.log', filemode='a',
+logging.basicConfig(
                     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S',
                     level=logging.DEBUG)
