@@ -24,12 +24,12 @@ time_zone = 8  # 时区
 
 # 两天后日期
 
-def get_seats_with_config(user_cfg, seat_config):
+def get_seats_with_config(user_config, date_config, seat_config):
     # 二楼东/二楼西/四楼/三楼大厅/守正书院/求新书院/自定义
-    seat_type = user_cfg['type']
-    if seat_type == "自定义":
-        return cfg['自定义']
-    return list(range(seat_config[seat_type]['start'], seat_config[seat_type]['end']))
+    seat_name = date_config['name']
+    if seat_name == "自定义":
+        return user_config['自定义']
+    return list(range(seat_config[seat_name]['start'], seat_config[seat_name]['end']))
 
 
 class SeatAutoBooker:
@@ -59,21 +59,21 @@ class SeatAutoBooker:
 
         self.cfg = booker_config
 
-    def book_favorite_seat(self, date_config, seat_config):
+    def book_favorite_seat(self, user_config, seat_config):
         logging.info('Booking favorite seat')
-
         for tried_times in range(5):
             try:
-                return self._book_favorite_seat(date_config, seat_config, tried_times)
+                return self._book_favorite_seat(user_config, seat_config, tried_times)
             except Exception as e:
                 logging.exception(e)
                 print(e.__class__, "尝试第{}次".format(tried_times))
                 time.sleep(1)
 
-    def _book_favorite_seat(self, date_config, seat_config, tried_times=0):
+    def _book_favorite_seat(self, user_config, seat_config, tried_times=0):
         logging.info('Entering _book_favorite_seat method')
-
-        seats = get_seats_with_config(date_config, seat_config)
+        the_day_after_tomorrow = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][(datetime.now().weekday() + 2) % 7]
+        date_config = user_config[the_day_after_tomorrow]
+        seats = get_seats_with_config(user_config, date_config, seat_config)
         today_0_clock = datetime.strptime(datetime.now().strftime("%Y-%m-%d 00:00:00"), "%Y-%m-%d %H:%M:%S")
         book_time = today_0_clock + timedelta(days=2) + timedelta(hours=date_config['开始时间'])
         delta = book_time - self.cfg["start-time"]
@@ -177,7 +177,7 @@ def is_booking_enable(date_cfg):
 if __name__ == "__main__":
     logging.info('Start of the program')
     with open("user_config.yml", 'r') as f_obj:
-        user_cfg = yaml.safe_load(f_obj)
+        user_config = yaml.safe_load(f_obj)
     with open("config/basic_config.yml", 'r') as f_obj:
         basic_config = yaml.safe_load(f_obj)
     with open("config/basic_config.yml", 'r') as f_obj:
@@ -198,6 +198,6 @@ if __name__ == "__main__":
         s.driver.quit()
         logging.info('Getting user info unsuccessful')
         exit(-1)
-    s.book_favorite_seat(date_config=user_cfg[the_day_after_tomorrow], seat_config=seat_config)
+    s.book_favorite_seat(user_config=user_config, seat_config=seat_config)
     s.driver.quit()
     logging.info('End of the program')
