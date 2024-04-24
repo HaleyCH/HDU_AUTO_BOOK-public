@@ -184,7 +184,7 @@ if __name__ == "__main__":
         seat_config = yaml.safe_load(f_obj)
 
     the_day_after_tomorrow = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][(datetime.now().weekday() + 2) % 7]
-    if not is_booking_enable(user_cfg[the_day_after_tomorrow]):
+    if not is_booking_enable(user_config[the_day_after_tomorrow]):
         logging.info('预约未启用')
         print("预约未启用")
         exit(0)
