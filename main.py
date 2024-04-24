@@ -93,7 +93,7 @@ class SeatAutoBooker:
         data = f"beginTime={total_seconds}&duration={3600 * date_config["持续小时数"]}&&seats[0]={seat}&seatBookers[0]={self.user_data['uid']}"
 
         # post
-        headers = self.headers
+        headers = self.cfg["headers"]
         headers['Cookie'] = self.cookie
         print(data)
         self.resp = requests.post(self.book_url, data=data, headers=headers)
@@ -162,7 +162,7 @@ def is_booking_enable(date_cfg):
     return False
 
 if __name__ == "__main__":
-    with open("_config.yml", 'r') as f_obj:
+    with open("user_config.yml", 'r') as f_obj:
         user_cfg = yaml.safe_load(f_obj)
     with open("config/basic_config.yml", 'r') as f_obj:
         basic_config = yaml.safe_load(f_obj)
